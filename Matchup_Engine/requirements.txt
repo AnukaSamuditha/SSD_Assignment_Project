@@ -1,0 +1,11 @@
+fastapi
+langchain-groq
+uvicorn
+pydantic
+python-dotenv
+llama-cloud-services
+langchain-community
+langchain
+aio-pika
+inscriptis
+upstash_redis

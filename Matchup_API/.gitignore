@@ -1,0 +1,57 @@
+
+# 🔹 Binaries and build artifacts
+*.exe
+*.out
+*.test
+*.so
+*.dll
+*.dylib
+*.a
+
+# 🔹 Vendor directory (if not using vendoring)
+vendor/
+
+# 🔹 Dependency caches
+/pkg/
+/bin/
+
+# 🔹 IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# 🔹 Logs
+*.log
+
+# 🔹 Environment and secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# 🔹 OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 🔹 Coverage/testing
+coverage.out
+*.coverprofile
+*.testresult
+testdata/
+
+# 🔹 Temporary files
+*.tmp
+*.temp
+*.bak
+
+# 🔹 Air hot reloading config
+.air.toml
+.air/
+
+# 🔹 Git backup files
+*.orig
+
+/tmp
