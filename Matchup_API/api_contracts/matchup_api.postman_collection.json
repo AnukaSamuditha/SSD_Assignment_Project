@@ -1,0 +1,369 @@
+{
+  "info": {
+    "name": "Matchup API",
+    "description": "All HTTP endpoints exposed by the Matchup_API Gin service, for use with Postman or import into OWASP ZAP (File > Import > Import a Postman Collection).\n\nAuth: the API issues a JWT via an `Authorization` HTTP-only cookie set by `/users/signup` and `/users/login`. Run those requests first in this Postman session (or in the same ZAP context) so subsequent authenticated requests carry the cookie automatically. Requests marked (auth) require this cookie; requests additionally marked (employer) require the authenticated user's `type` to be `employer`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "postId",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "companyId",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "applicationId",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@example.com\",\n  \"password\": \"changeme123\",\n  \"type\": \"jobseeker\",\n  \"gender\": \"female\",\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/signup",
+              "host": ["{{base_url}}"],
+              "path": ["users", "signup"]
+            },
+            "description": "Creates a user and sets the Authorization JWT cookie. `type` is either `jobseeker` or `employer`."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@example.com\",\n  \"password\": \"changeme123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/login",
+              "host": ["{{base_url}}"],
+              "path": ["users", "login"]
+            },
+            "description": "Authenticates a user and sets the Authorization JWT cookie."
+          }
+        },
+        {
+          "name": "Get Self (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/self",
+              "host": ["{{base_url}}"],
+              "path": ["users", "self"]
+            },
+            "description": "Returns the currently authenticated user. Requires the Authorization cookie."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/all/{{page}}?q=&empType=&workMode=&minSalary=&maxSalary=&currency=&createdAt=",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "all", "{{page}}"],
+              "query": [
+                { "key": "q", "value": "", "description": "full-text search term" },
+                { "key": "empType", "value": "", "description": "e.g. full-time, part-time, contract" },
+                { "key": "workMode", "value": "", "description": "e.g. remote, hybrid, onsite" },
+                { "key": "minSalary", "value": "" },
+                { "key": "maxSalary", "value": "" },
+                { "key": "currency", "value": "" },
+                { "key": "createdAt", "value": "", "description": "anytime | 24-hours | 7-days | 30-days" }
+              ]
+            },
+            "description": "Paginated (10/page), only returns posts with status=active."
+          }
+        },
+        {
+          "name": "Get Company Posts (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/company/posts/{{companyId}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "company", "posts", "{{companyId}}"]
+            },
+            "description": "Lists all posts for a company, including applicant counts."
+          }
+        },
+        {
+          "name": "Get Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{postId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Post (auth, employer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Backend Engineer\",\n  \"description\": \"Full job description here\",\n  \"summary\": \"Short summary\",\n  \"empType\": \"full-time\",\n  \"workMode\": \"remote\",\n  \"companyID\": \"{{companyId}}\",\n  \"salary\": {\n    \"min\": 50000,\n    \"max\": 80000,\n    \"currency\": \"USD\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/",
+              "host": ["{{base_url}}"],
+              "path": ["posts", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Post (auth, employer)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Backend Engineer\",\n  \"description\": \"Updated description\",\n  \"summary\": \"Updated summary\",\n  \"empType\": \"full-time\",\n  \"workMode\": \"hybrid\",\n  \"status\": \"active\",\n  \"salary\": {\n    \"min\": 60000,\n    \"max\": 90000,\n    \"currency\": \"USD\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{postId}}"]
+            },
+            "description": "All fields are optional; only supplied fields are updated."
+          }
+        },
+        {
+          "name": "Delete Post (auth, employer)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{postId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "item": [
+        {
+          "name": "Create Company (auth, employer)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Acme Inc", "type": "text" },
+                { "key": "description", "value": "We build things", "type": "text" },
+                { "key": "email", "value": "hr@acme.com", "type": "text" },
+                { "key": "username", "value": "acme", "type": "text" },
+                { "key": "location", "value": "Colombo, Sri Lanka", "type": "text" },
+                { "key": "website", "value": "https://acme.com", "type": "text" },
+                { "key": "facebook", "value": "https://facebook.com/acme", "type": "text" },
+                { "key": "twitter", "value": "https://twitter.com/acme", "type": "text" },
+                { "key": "linkedin", "value": "https://linkedin.com/company/acme", "type": "text" },
+                { "key": "file", "type": "file", "src": "", "description": "company logo, image/* required" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/company/",
+              "host": ["{{base_url}}"],
+              "path": ["company", ""]
+            },
+            "description": "One company per user account. `file` must be an image."
+          }
+        },
+        {
+          "name": "Get Company (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/company/{{companyId}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "{{companyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Check User's Company Exists (auth, employer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/company/{{userId}}/exists",
+              "host": ["{{base_url}}"],
+              "path": ["company", "{{userId}}", "exists"]
+            },
+            "description": "Path :id here is the user's public ID (looked up as author_id)."
+          }
+        },
+        {
+          "name": "Update Company (auth, employer)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Acme Inc", "type": "text" },
+                { "key": "description", "value": "Updated description", "type": "text" },
+                { "key": "email", "value": "hr@acme.com", "type": "text" },
+                { "key": "username", "value": "acme", "type": "text" },
+                { "key": "location", "value": "Colombo, Sri Lanka", "type": "text" },
+                { "key": "website", "value": "https://acme.com", "type": "text" },
+                { "key": "facebook", "value": "https://facebook.com/acme", "type": "text" },
+                { "key": "linkedin", "value": "https://linkedin.com/company/acme", "type": "text" },
+                { "key": "file", "type": "file", "src": "", "description": "optional new logo, image/* required" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/company/{{companyId}}",
+              "host": ["{{base_url}}"],
+              "path": ["company", "{{companyId}}"]
+            },
+            "description": "All fields optional; only supplied fields are updated."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Application",
+      "item": [
+        {
+          "name": "Create Application (auth)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "postID", "value": "{{postId}}", "type": "text" },
+                { "key": "companyID", "value": "{{companyId}}", "type": "text" },
+                { "key": "file", "type": "file", "src": "", "description": "resume/CV, application/pdf required" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/application/",
+              "host": ["{{base_url}}"],
+              "path": ["application", ""]
+            },
+            "description": "Uploads a PDF resume and queues it for matching."
+          }
+        },
+        {
+          "name": "Get Application (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/application/{{applicationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["application", "{{applicationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Post Applications (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/application/post/{{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["application", "post", "{{postId}}"]
+            },
+            "description": "Lists (deduplicated by applicant) applications for a given post."
+          }
+        },
+        {
+          "name": "Update Application (auth)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"reviewed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/application/{{applicationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["application", "{{applicationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Misc",
+      "item": [
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["metrics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

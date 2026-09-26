@@ -2,7 +2,6 @@ package initializers
 
 import (
 	"context"
-	"crypto/tls"
 	"log"
 	"os"
 
@@ -21,10 +20,10 @@ func ConnectRedis() {
 	}
 
 	Redis = redis.NewClient(&redis.Options{
-		Addr:     opt.Addr,
-		Password: opt.Password,
-		DB:       0,
-		TLSConfig: &tls.Config{},
+		Addr:      opt.Addr,
+		Password:  opt.Password,
+		DB:        0,
+		TLSConfig: opt.TLSConfig,
 	})
 
 	_, err = Redis.Ping(Ctx).Result()

@@ -8,9 +8,9 @@ export default function LoginLayout({
   children: React.ReactNode;
 }) {
   return (
-      <>
-        <AuthNav />
-        {children}
-      </>
+    <div className="relative w-full min-h-dvh">
+      <AuthNav />
+      {children}
+    </div>
   );
 }
