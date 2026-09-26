@@ -1,0 +1,119 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchup_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: matchup
+      POSTGRES_PASSWORD: matchup
+      POSTGRES_DB: matchup
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matchup"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: matchup_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: matchup_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: matchup
+      RABBITMQ_DEFAULT_PASS: matchup
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  srh:
+    image: hiett/serverless-redis-http:latest
+    container_name: matchup_srh
+    restart: unless-stopped
+    ports:
+      - "8079:80"
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: matchup_srh_token
+      SRH_CONNECTION_STRING: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  matchup_api:
+    build:
+      context: ./Matchup_API
+    container_name: matchup_api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "9091:9091"
+    environment:
+      DB_URL: postgres://matchup:matchup@postgres:5432/matchup?sslmode=disable
+      SECRET: ${SECRET}
+      REDIS_URL: redis://redis:6379/0
+      CLOUDAMQP_URL: amqp://matchup:matchup@rabbitmq:5672/
+      RESUME_RESULT_QUEUE: resume_result_queue
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  matchup_engine:
+    build:
+      context: ./Matchup_Engine
+    container_name: matchup_engine
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      LLAMA_CLOUD_API_KEY: ${LLAMA_CLOUD_API_KEY}
+      UPSTASH_REDIS_REST_URL: http://srh:80
+      UPSTASH_REDIS_REST_TOKEN: matchup_srh_token
+      REDIS_URL: redis://redis:6379/0
+      CLOUDAMQP_URL: amqp://matchup:matchup@rabbitmq:5672/
+      QUEUE_NAME: resume_queue
+      PRODUCER_QUEUE: resume_result_queue
+      DATABASE_URL: postgres://matchup:matchup@postgres:5432/matchup?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      srh:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:

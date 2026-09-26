@@ -29,7 +29,7 @@ func main() {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://matchup-frontend-iota.vercel.app"},
+		AllowOrigins:     []string{"https://matchup-frontend-iota.vercel.app", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/providers/axios";
+import Link from "next/link";
+import Image from "next/image";
+import MatchupLogo from "@/public/matchup_logo.png";
 
 
 const data = {
@@ -122,7 +125,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="gap-1 pb-0">
+        <Link
+          href="/dashboard"
+          className="flex w-full items-center justify-center py-1 group-data-[collapsible=icon]:hidden"
+        >
+          <Image
+            src={MatchupLogo}
+            alt="Matchup"
+            width={2816}
+            height={1536}
+            className="h-11 w-auto"
+          />
+        </Link>
         {companyQuery.data?.company && (
           <TeamSwitcher teams={[companyQuery.data?.company]} />
         )}
