@@ -12,9 +12,19 @@ const SENTRY_ORIGIN = "https://o4510622048976896.ingest.us.sentry.io";
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
+  // Next's dev-mode HMR runtime (webpack "eval" devtool / Turbopack module
+  // loader) executes chunks via eval(), which a strict script-src blocks
+  // (see: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy).
+  // That's dev-only tooling, so 'unsafe-eval' is added only outside production
+  // and the shipped policy stays eval-free.
+  const scriptSrc =
+    process.env.NODE_ENV === "production"
+      ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic';`
+      : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval';`;
+
   const csp = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    ${scriptSrc}
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob:;
     font-src 'self' data:;

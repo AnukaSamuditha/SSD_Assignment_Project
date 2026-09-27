@@ -20,6 +20,7 @@ func init() {
 	initializers.ConnectDB()
 	initializers.ConnectRedis()
 	initializers.ConnectRabbitMQ()
+	initializers.ConnectGoogleOAuth()
 }
 func main() {
 	f, _ := os.Create("gin.log")

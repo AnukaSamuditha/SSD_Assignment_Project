@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import z from "zod";
 import { useUserStore } from "@/stores/user.store";
 import { useCompanyStore } from "@/stores/company.store";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function SignUp() {
   const [isJobSeeker, setIsJobSeeker] = useState<boolean>(true);
@@ -266,6 +267,24 @@ export default function SignUp() {
               {accountMutation.isPending ? "Creating..." : "Create account"}
             </button>
           </form>
+
+          <div className="mt-5 flex w-full items-center gap-3">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs font-normal text-zinc-400">or</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <div className="mt-5 w-full">
+            <GoogleSignInButton
+              accountType={isJobSeeker ? "regular" : "employer"}
+              label={
+                isJobSeeker
+                  ? "Continue with Google as a Job Seeker"
+                  : "Continue with Google as an Employer"
+              }
+            />
+          </div>
+
           <div className="mt-6 w-full">
             <p className="text-center text-xs font-normal text-[#6a6a6a]">
               Already have an account?{" "}

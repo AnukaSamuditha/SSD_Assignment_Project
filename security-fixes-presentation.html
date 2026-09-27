@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matchup Security Fixes — Team Presentation</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#ffffff; --border:#e3e6ee; --text:#1a1d29; --muted:#6b7280;
+    --crit:#dc2626; --high:#ea580c; --med:#ca8a04; --low:#2563eb;
+    --m1:#2563eb; --m2:#7c3aed; --m3:#059669; --m4:#d97706;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    padding:40px 20px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1400px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;font-weight:800;letter-spacing:-0.02em}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 26px}
+
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .stat{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 20px;min-width:100px;text-align:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .stat b{display:block;font-size:24px;font-weight:800}
+  .stat span{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .stat.fixed b{color:#059669}
+  .stat.open b{color:#dc2626}
+  .stat.team b{color:#4338ca}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:22px;font-weight:600}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+  section.block{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    padding:24px 26px 28px;margin-bottom:28px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  h2{font-size:18px;margin:0 0 4px;font-weight:800}
+  h2 .count{color:var(--muted);font-weight:600;font-size:14px}
+  .block-sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{
+    text-align:left;background:#f1f2f8;color:#4b5065;
+    font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    padding:10px 12px;border-bottom:2px solid var(--border);
+    position:sticky;top:0;
+  }
+  td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.45}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafbff}
+
+  .member-row-anuka td:first-child{border-left:3px solid var(--m1)}
+  .member-row-sashiru td:first-child{border-left:3px solid var(--m2)}
+  .member-row-dinuka td:first-child{border-left:3px solid var(--m3)}
+  .member-row-manushi td:first-child{border-left:3px solid var(--m4)}
+
+  .issue{font-weight:700;max-width:190px}
+  .owasp{white-space:nowrap;font-size:12px;font-weight:600;color:#374151}
+  .risk{max-width:230px;color:#4b5563}
+  .added{max-width:220px}
+  .added code, .risk code, .ensures code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11.5px;background:#f1f2f8;padding:1px 5px;border-radius:4px;color:#3730a3;
+  }
+  .ensures{max-width:230px;color:#374151}
+
+  .member-badge{
+    display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;
+    padding:4px 10px;border-radius:20px;white-space:nowrap;
+  }
+  .member-badge .dot{width:8px;height:8px}
+  .badge-anuka{background:#eff4ff;color:var(--m1)}
+  .badge-sashiru{background:#f4effe;color:var(--m2)}
+  .badge-dinuka{background:#ecfdf5;color:var(--m3)}
+  .badge-manushi{background:#fef6e9;color:var(--m4)}
+
+  .sev{
+    display:inline-block;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:800;
+    white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;
+  }
+  .sev.Critical{background:#fee2e2;color:var(--crit)}
+  .sev.High{background:#ffedd5;color:var(--high)}
+  .sev.Medium{background:#fef3c7;color:var(--med)}
+  .sev.Low{background:#dbeafe;color:var(--low)}
+
+  .reason{color:#4b5563}
+  .comp-tag{
+    display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;
+    background:#e5e7eb;color:#374151;white-space:nowrap;
+  }
+
+  footer{color:var(--muted);font-size:12px;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Matchup — Security Fixes Walkthrough</h1>
+  <p class="sub">What we found, what each of us fixed, and what's intentionally left for later · presented by Team Matchup</p>
+
+  <div class="summary">
+    <div class="stat fixed"><b>14</b><span>Fixes Presented</span></div>
+    <div class="stat team"><b>4</b><span>Team Members</span></div>
+    <div class="stat open"><b>9</b><span>Remaining Items</span></div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--m1)"></i>Anuka — Member 01</span>
+    <span><i class="dot" style="background:var(--m2)"></i>Sashiru — Member 02</span>
+    <span><i class="dot" style="background:var(--m3)"></i>Dinuka — Member 03</span>
+    <span><i class="dot" style="background:var(--m4)"></i>Manushi — Member 04</span>
+  </div>
+
+  <section class="block">
+    <h2>Issues We Fixed <span class="count">(14)</span></h2>
+    <p class="block-sub">Grouped by presenter, in the order each person covers them.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Issue</th>
+          <th>OWASP Category</th>
+          <th>Security Risk</th>
+          <th>What We Added</th>
+          <th>How It Ensures the Fix</th>
+          <th>Member</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="member-row-anuka">
+          <td class="issue">SQL Injection in job search</td>
+          <td class="owasp">A03:2021 – Injection</td>
+          <td class="risk">User input parsed as a DB query-language expression — broke queries, leaked internal errors</td>
+          <td class="added">Swapped <code>to_tsquery</code> for <code>plainto_tsquery</code> in <code>GetAllPosts</code></td>
+          <td class="ensures">Input is always treated as plain search text, never as query syntax</td>
+          <td><span class="member-badge badge-anuka"><i class="dot" style="background:var(--m1)"></i>Anuka</span></td>
+        </tr>
+
+        <tr class="member-row-anuka">
+          <td class="issue">Next.js RCE advisories</td>
+          <td class="owasp">A06:2021 – Vulnerable &amp; Outdated Components</td>
+          <td class="risk">Known unauthenticated remote-code-execution vulnerabilities in the framework version</td>
+          <td class="added">Upgraded Next.js <code>15.5.9 → 15.5.26</code></td>
+          <td class="ensures">Patched release closes the published advisories; verified via <code>npm audit</code> + build</td>
+          <td><span class="member-badge badge-anuka"><i class="dot" style="background:var(--m1)"></i>Anuka</span></td>
+        </tr>
+
+        <tr class="member-row-anuka">
+          <td class="issue">No file-type validation on uploads</td>
+          <td class="owasp">A03:2021 – Injection</td>
+          <td class="risk">An SVG with an embedded <code>&lt;script&gt;</code> could upload as a "logo" — stored XSS if opened directly</td>
+          <td class="added"><code>ValidateUploadContentType</code> — sniffs real bytes via <code>http.DetectContentType</code></td>
+          <td class="ensures">File is checked against an allow-list by its real content, not the client-sent header</td>
+          <td><span class="member-badge badge-anuka"><i class="dot" style="background:var(--m1)"></i>Anuka</span></td>
+        </tr>
+
+        <tr class="member-row-sashiru">
+          <td class="issue">Broken access control on update/delete</td>
+          <td class="owasp">A01:2021 – Broken Access Control</td>
+          <td class="risk">Any logged-in user could edit or delete <em>another</em> user's company, post, or application</td>
+          <td class="added">Ownership check before every update/delete/create-post action</td>
+          <td class="ensures">Action only proceeds if the caller actually owns the resource, else <code>403</code></td>
+          <td><span class="member-badge badge-sashiru"><i class="dot" style="background:var(--m2)"></i>Sashiru</span></td>
+        </tr>
+
+        <tr class="member-row-sashiru">
+          <td class="issue">Missing anti-clickjacking header</td>
+          <td class="owasp">A05:2021 – Security Misconfiguration</td>
+          <td class="risk">Site could be framed in a hidden iframe to trick users into unintended clicks</td>
+          <td class="added"><code>X-Frame-Options: DENY</code> + CSP <code>frame-ancestors 'none'</code></td>
+          <td class="ensures">Browser refuses to render the page inside any frame, on any site</td>
+          <td><span class="member-badge badge-sashiru"><i class="dot" style="background:var(--m2)"></i>Sashiru</span></td>
+        </tr>
+
+        <tr class="member-row-sashiru">
+          <td class="issue">No Content Security Policy</td>
+          <td class="owasp">A05:2021 – Security Misconfiguration</td>
+          <td class="risk">No restriction on what scripts/resources a page can load if content is ever injected</td>
+          <td class="added">Nonce + <code>'strict-dynamic'</code> CSP via Next.js middleware</td>
+          <td class="ensures">Only the app's own nonced scripts run; verified live with zero console violations</td>
+          <td><span class="member-badge badge-sashiru"><i class="dot" style="background:var(--m2)"></i>Sashiru</span></td>
+        </tr>
+
+        <tr class="member-row-sashiru">
+          <td class="issue">Other security headers missing</td>
+          <td class="owasp">A05:2021 – Security Misconfiguration</td>
+          <td class="risk">MIME-sniffing, no forced HTTPS, referrer leakage, unneeded browser feature access</td>
+          <td class="added"><code>X-Content-Type-Options</code>, <code>HSTS</code>, <code>Referrer-Policy</code>, <code>Permissions-Policy</code></td>
+          <td class="ensures">Safe, restrictive defaults now applied to every single API response</td>
+          <td><span class="member-badge badge-sashiru"><i class="dot" style="background:var(--m2)"></i>Sashiru</span></td>
+        </tr>
+
+        <tr class="member-row-dinuka">
+          <td class="issue">No CSRF protection</td>
+          <td class="owasp">A01:2021 – Broken Access Control</td>
+          <td class="risk">A malicious page could trigger create/update/delete actions using a victim's own session cookie</td>
+          <td class="added"><code>CSRFProtection</code> middleware — validates the request's <code>Origin</code></td>
+          <td class="ensures">Rejected unless <code>Origin</code> matches our real frontend; browsers can't forge this header</td>
+          <td><span class="member-badge badge-dinuka"><i class="dot" style="background:var(--m3)"></i>Dinuka</span></td>
+        </tr>
+
+        <tr class="member-row-dinuka">
+          <td class="issue">Password hash exposed to frontend</td>
+          <td class="owasp">A02:2021 – Cryptographic Failures</td>
+          <td class="risk">bcrypt hash returned in API responses and persisted into browser <code>localStorage</code></td>
+          <td class="added"><code>json:"-"</code> tag on the <code>Password</code> field</td>
+          <td class="ensures">Hash is never serialized into any API response, by design — not per-endpoint</td>
+          <td><span class="member-badge badge-dinuka"><i class="dot" style="background:var(--m3)"></i>Dinuka</span></td>
+        </tr>
+
+        <tr class="member-row-dinuka">
+          <td class="issue">JWT signature errors ignored</td>
+          <td class="owasp">A07:2021 – Identification &amp; Authentication Failures</td>
+          <td class="risk">A token with an invalid/forged signature still had its claims trusted — full auth bypass</td>
+          <td class="added">Abort with <code>401</code> unless <code>err == nil</code> and <code>token.Valid</code></td>
+          <td class="ensures">Any unverified or tampered token is rejected before its claims are ever read</td>
+          <td><span class="member-badge badge-dinuka"><i class="dot" style="background:var(--m3)"></i>Dinuka</span></td>
+        </tr>
+
+        <tr class="member-row-manushi">
+          <td class="issue">No rate limiting on the API</td>
+          <td class="owasp">A07:2021 – Identification &amp; Authentication Failures</td>
+          <td class="risk">Brute-force login attempts and volume-based abuse possible on any endpoint</td>
+          <td class="added">Redis-backed limiter — global cap, plus a stricter cap on login/signup</td>
+          <td class="ensures">Excess requests per IP get <code>429</code>, rejected before reaching the handler</td>
+          <td><span class="member-badge badge-manushi"><i class="dot" style="background:var(--m4)"></i>Manushi</span></td>
+        </tr>
+
+        <tr class="member-row-manushi">
+          <td class="issue">JWT <code>exp</code> claim could crash server</td>
+          <td class="owasp">A07:2021 – Identification &amp; Authentication Failures</td>
+          <td class="risk">A missing/non-numeric <code>exp</code> claim panicked the request instead of failing safely</td>
+          <td class="added">Comma-ok type assertion on the claim</td>
+          <td class="ensures">A malformed claim is now just treated as invalid — never a crash</td>
+          <td><span class="member-badge badge-manushi"><i class="dot" style="background:var(--m4)"></i>Manushi</span></td>
+        </tr>
+
+        <tr class="member-row-manushi">
+          <td class="issue">No server-side role validation</td>
+          <td class="owasp">A04:2021 – Insecure Design</td>
+          <td class="risk">Client could set its own signup <code>type</code> (account role) to anything, unchecked</td>
+          <td class="added">Allow-list check on <code>type</code> at signup</td>
+          <td class="ensures">Only the two real self-service roles can ever be assigned</td>
+          <td><span class="member-badge badge-manushi"><i class="dot" style="background:var(--m4)"></i>Manushi</span></td>
+        </tr>
+
+        <tr class="member-row-manushi">
+          <td class="issue">Unpinned dependencies (Matchup Engine)</td>
+          <td class="owasp">A08:2021 – Software &amp; Data Integrity Failures</td>
+          <td class="risk">A fresh build could silently pull a newer, unreviewed, possibly vulnerable release</td>
+          <td class="added">Pinned all 11 direct dependencies to already-tested versions</td>
+          <td class="ensures">Every build installs the exact same, already-verified versions</td>
+          <td><span class="member-badge badge-manushi"><i class="dot" style="background:var(--m4)"></i>Manushi</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section class="block">
+    <h2>Not Fixed Yet <span class="count">(9 remaining)</span></h2>
+    <p class="block-sub">Left open on purpose — all Medium/Low risk, with the reasoning behind deferring each one.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Issue</th>
+          <th>Severity</th>
+          <th>Component</th>
+          <th>Why We Haven't Fixed It</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="issue">Raw DB errors returned in API responses</td>
+          <td><span class="sev Medium">Medium</span></td>
+          <td><span class="comp-tag">API</span></td>
+          <td class="reason">Touches many controllers at once — needs a consistent, repo-wide error-handling pass rather than a one-line fix. Info-disclosure only; no direct exploit path.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">Unvalidated key interpolated into REST URL</td>
+          <td><span class="sev Medium">Medium</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">Lives in the Matchup Engine (Python service) — outside this review round, which focused on the API and frontend.</td>
+        </tr>
+
+        <tr>
+          <td class="issue"><code>download_file()</code> has no host allow-list</td>
+          <td><span class="sev Medium">Medium</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">Same Engine scope. Needs a product decision on which hosts are legitimate before we can safely restrict it.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">No schema validation on queue/API payloads</td>
+          <td><span class="sev Medium">Medium</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">Engine scope. Needs a validation layer added across several call sites — planned as its own follow-up task.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">Dropped queue message: no retry, no alert</td>
+          <td><span class="sev Medium">Medium</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">Engine scope. Needs an alerting/observability decision (which channel, which service) before it can be wired up properly.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">Container runs as root (no <code>USER</code>)</td>
+          <td><span class="sev Low">Low</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">Low risk in our current single-tenant container deployment. Simple fix, just not yet prioritized ahead of higher-severity items.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">API keys in plaintext <code>.env</code></td>
+          <td><span class="sev Low">Low</span></td>
+          <td><span class="comp-tag">Engine</span></td>
+          <td class="reason">File is git-ignored, never committed — exposure is local-only to whoever already has filesystem access. A real fix means adopting a secrets manager, which is an infra decision, not a code change.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">Sentry example page left enabled</td>
+          <td><span class="sev Low">Low</span></td>
+          <td><span class="comp-tag">FE</span></td>
+          <td class="reason">Default SDK scaffolding, not app data — low risk either way. Needs a product call on whether to keep it for future debugging or remove it.</td>
+        </tr>
+
+        <tr>
+          <td class="issue">Dashboard has no client-side route guard</td>
+          <td><span class="sev Low">Low</span></td>
+          <td><span class="comp-tag">FE</span></td>
+          <td class="reason">Not an actual bypass — the API still enforces auth independently, so no data is exposed. Fixing it only improves the UX (avoids a brief empty-dashboard flash), not the security posture.</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer>14 fixes across 4 members · 9 items intentionally deferred with reasoning above · Matchup security hardening pass</footer>
+</div>
+</body>
+</html>
