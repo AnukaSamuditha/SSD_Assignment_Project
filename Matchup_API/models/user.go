@@ -7,7 +7,7 @@ type User struct {
 	gorm.Model
 	PublicID  uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique"`
 	Email     string    `gorm:"unique"`
-	Password  string
+	Password  string `json:"-"`
 	Type      string
 	Firstname string
 	Lastname  string
