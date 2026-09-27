@@ -84,7 +84,7 @@
   <p class="sub">Matchup API (Go) · Matchup Engine (Python) · Frontend (Next.js) — reviewed 2026-09-27</p>
 
   <div class="summary">
-    <div class="stat crit"><b>1</b>Critical</div>
+    <div class="stat crit"><b>0</b>Critical</div>
     <div class="stat high"><b>3</b>High</div>
     <div class="stat med"><b>8</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
@@ -124,13 +124,13 @@
         <td class="loc"><code>models/user.go</code>, <code>types/index.ts</code></td>
         <td class="issue">Password hash had no <code>json:"-"</code> tag — returned in API responses and persisted to browser <code>localStorage</code>. Tagged the field <code>json:"-"</code> so it's never serialized, and removed the dead <code>Password</code> field from the frontend <code>UserType</code>.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>3</td>
-        <td><span class="sev Critical">Critical</span></td>
+        <td><span class="sev Critical">Critical</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A03 · Supply Chain Failures</td>
         <td><span class="comp FE">FE</span></td>
-        <td class="loc"><code>package.json</code> (next 15.5.9)</td>
-        <td class="issue">Next.js version has known unauthenticated RCE advisories (fixed in 15.5.24+); <code>npm audit</code> shows 33 vulns, 17 high / 1 critical.</td>
+        <td class="loc"><code>package.json</code> (next 15.5.9 → 15.5.26)</td>
+        <td class="issue">Next.js version had known unauthenticated RCE advisories (fixed in 15.5.24+). Upgraded to 15.5.26; <code>next</code>'s own audit entry is now moderate-only (unrelated postcss transitive), and <code>npm run build</code> succeeds with no new errors. Remaining high/critical audit entries are in unrelated transitive deps (tar, axios, lodash, sharp, ws, etc.) — not part of this finding.</td>
       </tr>
       <tr>
         <td>4</td>
@@ -271,7 +271,7 @@
     </tbody>
   </table>
 
-  <footer>20 findings (3 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (4 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
