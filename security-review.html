@@ -273,13 +273,21 @@
         <td><span class="sev Medium">Medium</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A02 · Security Misconfiguration</td>
         <td><span class="comp FE">FE</span></td>
-        <td class="loc"><code>next.config.ts</code></td>
-        <td class="issue">ZAP (FE scan): Missing Anti-clickjacking Header — no page sent <code>X-Frame-Options</code> or a CSP <code>frame-ancestors</code> directive, so the site could be embedded in a hidden iframe elsewhere. Added both headers via Next.js <code>headers()</code> config on every route; verified present on a live response (<code>X-Frame-Options: DENY</code>, <code>Content-Security-Policy: frame-ancestors 'none'</code>).</td>
+        <td class="loc"><code>next.config.ts</code>, <code>middleware.ts</code></td>
+        <td class="issue">ZAP (FE scan): Missing Anti-clickjacking Header — no page sent <code>X-Frame-Options</code> or a CSP <code>frame-ancestors</code> directive, so the site could be embedded in a hidden iframe elsewhere. Added <code>X-Frame-Options: DENY</code> via <code>next.config.ts</code>; <code>frame-ancestors 'none'</code> now lives in the full CSP set by <code>middleware.ts</code> (row 22) rather than as a separate header.</td>
+      </tr>
+      <tr class="fixed">
+        <td>22</td>
+        <td><span class="sev Medium">Medium</span><span class="badge-fixed">Fixed</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp FE">FE</span></td>
+        <td class="loc"><code>middleware.ts</code></td>
+        <td class="issue">ZAP (FE scan): Content Security Policy (CSP) Header Not Set — no response carried a CSP at all. Added Next.js's documented nonce + <code>'strict-dynamic'</code> pattern in <code>middleware.ts</code> (real <code>default-src 'self'</code>, scoped <code>connect-src</code>/<code>img-src</code>/<code>style-src</code>, <code>frame-ancestors 'none'</code>). Verified the header on a live response and browser-tested the homepage, login, and signup pages in Chrome: full styling, images, and JS interactivity (form validation, tab switching) all work with zero console errors.</td>
       </tr>
     </tbody>
   </table>
 
-  <footer>21 findings (11 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>22 findings (12 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
