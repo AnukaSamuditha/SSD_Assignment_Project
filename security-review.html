@@ -86,7 +86,7 @@
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
     <div class="stat high"><b>0</b>High</div>
-    <div class="stat med"><b>8</b>Medium</div>
+    <div class="stat med"><b>7</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
   </div>
 
@@ -156,13 +156,13 @@
         <td class="loc"><code>postController.go:20-116</code></td>
         <td class="issue">CreatePost accepted a client-supplied <code>companyID</code> with no check the user owns that company. Now 403s unless <code>company.AuthorID == user.PublicID</code>.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>7</td>
-        <td><span class="sev Medium">Medium</span></td>
+        <td><span class="sev Medium">Medium</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A06 · Insecure Design</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>userController.go:20</code>, <code>models/user.go:11</code></td>
-        <td class="issue">Client self-assigns account role (e.g. "employer") at signup with no server-side verification.</td>
+        <td class="loc"><code>userController.go:15</code></td>
+        <td class="issue">Client self-assigned account role (e.g. "employer") at signup with no server-side verification. <code>SignUp</code> now rejects any <code>type</code> outside the known self-service roles (<code>employer</code>, <code>regular</code>) with 400.</td>
       </tr>
       <tr>
         <td>8</td>
@@ -271,7 +271,7 @@
     </tbody>
   </table>
 
-  <footer>20 findings (7 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (8 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
