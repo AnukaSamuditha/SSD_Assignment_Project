@@ -86,7 +86,7 @@
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
     <div class="stat high"><b>0</b>High</div>
-    <div class="stat med"><b>7</b>Medium</div>
+    <div class="stat med"><b>6</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
   </div>
 
@@ -164,13 +164,13 @@
         <td class="loc"><code>userController.go:15</code></td>
         <td class="issue">Client self-assigned account role (e.g. "employer") at signup with no server-side verification. <code>SignUp</code> now rejects any <code>type</code> outside the known self-service roles (<code>employer</code>, <code>regular</code>) with 400.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>8</td>
-        <td><span class="sev Medium">Medium</span></td>
+        <td><span class="sev Medium">Medium</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A10 · Exceptional Conditions</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>middleware/auth.go:34,52-54</code></td>
-        <td class="issue">Unchecked type assertion on the JWT <code>exp</code> claim panics; the failure branch logs but never aborts the request.</td>
+        <td class="loc"><code>middleware/auth.go</code></td>
+        <td class="issue">Unchecked type assertion on the JWT <code>exp</code> claim panicked on a missing/non-numeric claim; the failure branch logged but never aborted the request. Now uses a comma-ok assertion and aborts with 401 on failure (the failure-branch fix landed earlier alongside row 1's JWT signature fix).</td>
       </tr>
       <tr>
         <td>9</td>
@@ -271,7 +271,7 @@
     </tbody>
   </table>
 
-  <footer>20 findings (8 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (9 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>

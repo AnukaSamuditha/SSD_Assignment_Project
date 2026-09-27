@@ -40,9 +40,15 @@ func RequireAuth(c *gin.Context) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 
-		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+		// SECURITY FIX: `claims["exp"]` was type-asserted directly, so a token
+		// with a missing or non-numeric exp claim panicked the request
+		// instead of being rejected. A comma-ok assertion treats any such
+		// token as invalid rather than crashing the handler.
+		exp, expOk := claims["exp"].(float64)
+
+		if !expOk || float64(time.Now().Unix()) > exp {
 			c.AbortWithStatus(http.StatusUnauthorized)
-			
+
 			return
 		}
 
