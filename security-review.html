@@ -85,7 +85,7 @@
 
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
-    <div class="stat high"><b>1</b>High</div>
+    <div class="stat high"><b>0</b>High</div>
     <div class="stat med"><b>5</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
   </div>
@@ -292,18 +292,18 @@
         <td class="loc"><code>middleware/csrf.go</code>, <code>main.go</code></td>
         <td class="issue">No CSRF protection anywhere. The auth cookie is <code>SameSite=None</code> (required cross-origin for the FE/API split), and CORS only stops an attacker's page from reading the response, not from sending it — <code>multipart/form-data</code> POSTs (CreateCompany, CreateApplication) don't even trigger a preflight. A malicious page could silently create a company or submit an application as a logged-in visitor. Added <code>CSRFProtection</code> middleware rejecting any POST/PUT/PATCH/DELETE whose browser-set, script-unforgeable <code>Origin</code> header isn't the real frontend; verified with 7 unit tests (allowed origins pass, foreign/missing origins blocked on mutating methods, GET always passes through).</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>24</td>
-        <td><span class="sev High">High</span></td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A05 · Injection</td>
         <td><span class="comp API">API</span></td>
         <td class="loc"><code>controllers/companyController.go</code>, <code>controllers/applicationController.go</code>, <code>utils/uploadFile.go</code></td>
-        <td class="issue">Uploaded logo/résumé files are only checked via <code>strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/")</code> (or <code>"application/pdf"</code>) — a client-supplied, unverified header with no magic-byte/content validation anywhere in <code>utils/uploadFile.go</code>. <code>image/svg+xml</code> passes the logo check, so an SVG carrying a <code>&lt;script&gt;</code>/event-handler payload can be uploaded; if it's ever opened as a top-level document (not just an <code>&lt;img&gt;</code>) rather than only rendered inline, it executes — stored XSS via file upload (CWE-434/CWE-79).</td>
+        <td class="issue">Uploaded logo/résumé files were only checked via <code>strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/")</code> (or <code>"application/pdf"</code>) — a client-supplied, unverified header. <code>image/svg+xml</code> passed the logo check, so an SVG carrying a <code>&lt;script&gt;</code> payload could be uploaded — stored XSS if ever opened as a top-level document (CWE-434/CWE-79). Added <code>utils.ValidateUploadContentType</code>, which sniffs the real magic bytes via <code>http.DetectContentType</code> against an explicit allow-list (PNG/JPEG/GIF/WEBP for logos, PDF for résumés) and ignores the client header entirely. Verified with 5 unit tests: real PNG/PDF pass, an SVG with an embedded <code>&lt;script&gt;</code> tag and HTML disguised with a fake PDF header are both rejected, and the file is correctly rewound afterward so the upload still proceeds.</td>
       </tr>
     </tbody>
   </table>
 
-  <footer>24 findings (13 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>24 findings (14 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
