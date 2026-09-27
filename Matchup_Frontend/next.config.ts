@@ -3,6 +3,27 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // SECURITY FIX (ZAP: Missing Anti-clickjacking Header, CWE-1021): no page
+  // sent X-Frame-Options or a CSP frame-ancestors directive, so the site
+  // could be embedded in a hidden/disguised iframe on another site for
+  // clickjacking. Deny framing entirely on every route.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'none'",
+          },
+        ],
+      },
+    ];
+  },
   images : {
     remotePatterns : [
       {
