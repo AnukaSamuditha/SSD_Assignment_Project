@@ -87,7 +87,7 @@
     <div class="stat crit"><b>0</b>Critical</div>
     <div class="stat high"><b>0</b>High</div>
     <div class="stat med"><b>5</b>Medium</div>
-    <div class="stat low"><b>5</b>Low</div>
+    <div class="stat low"><b>4</b>Low</div>
   </div>
 
   <div class="legend">
@@ -220,13 +220,13 @@
         <td class="loc"><code>requirements.txt</code></td>
         <td class="issue">Every dependency was unpinned — builds could silently pull newer, unreviewed releases. Pinned all 11 direct dependencies to the exact versions already installed and tested in <code>.venv</code>; verified with a clean install into a fresh venv.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>15</td>
-        <td><span class="sev Low">Low</span></td>
+        <td><span class="sev Low">Low</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A07 · Auth Failures</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>routes/userRoutes.go</code></td>
-        <td class="issue">No rate limiting or lockout on <code>/users/login</code> or <code>/users/signup</code>.</td>
+        <td class="loc"><code>middleware/rate_limit.go</code>, <code>main.go</code>, <code>routes/userRoutes.go</code></td>
+        <td class="issue">No rate limiting anywhere in the API, not just login/signup. Added a Redis-backed (GCRA) <code>RateLimit</code> middleware — a generous 100 req/min per-IP cap applied globally to every endpoint, plus a much tighter 5 req/min cap layered specifically on <code>/users/login</code> and <code>/users/signup</code> to slow brute-force/credential stuffing. Also set <code>router.SetTrustedProxies(nil)</code>, since Gin's unsafe default (trust all proxies) let a client spoof <code>X-Forwarded-For</code> to fake its IP and dodge the limit entirely. Fails open if Redis is unreachable rather than taking the API down. Verified with 4 unit tests against an in-memory Redis: within-limit passes, over-limit returns 429, separate clients are tracked independently, and it fails open when Redis is down.</td>
       </tr>
       <tr>
         <td>16</td>
@@ -300,10 +300,18 @@
         <td class="loc"><code>controllers/companyController.go</code>, <code>controllers/applicationController.go</code>, <code>utils/uploadFile.go</code></td>
         <td class="issue">Uploaded logo/résumé files were only checked via <code>strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/")</code> (or <code>"application/pdf"</code>) — a client-supplied, unverified header. <code>image/svg+xml</code> passed the logo check, so an SVG carrying a <code>&lt;script&gt;</code> payload could be uploaded — stored XSS if ever opened as a top-level document (CWE-434/CWE-79). Added <code>utils.ValidateUploadContentType</code>, which sniffs the real magic bytes via <code>http.DetectContentType</code> against an explicit allow-list (PNG/JPEG/GIF/WEBP for logos, PDF for résumés) and ignores the client header entirely. Verified with 5 unit tests: real PNG/PDF pass, an SVG with an embedded <code>&lt;script&gt;</code> tag and HTML disguised with a fake PDF header are both rejected, and the file is correctly rewound afterward so the upload still proceeds.</td>
       </tr>
+      <tr class="fixed">
+        <td>25</td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
+        <td class="cat">A05 · Injection</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>controllers/postController.go</code> (<code>GetAllPosts</code>)</td>
+        <td class="issue">ZAP: SQL Injection (CWE-89), plus the separately-flagged Format String Error (CWE-134) — same root cause. The <code>q</code> search parameter was passed straight into Postgres's <code>to_tsquery()</code>, which parses its argument as a tsquery *expression* (its own mini query language with <code>&amp;</code>, <code>|</code>, <code>!</code>, <code>:</code>, parentheses, quotes), not plain text — a bare <code>'</code> or a <code>%n/%s</code> payload both broke the query with a leaked DB error (ZAP's evidence: <code>syntax error in tsquery</code>, SQLSTATE 42601). Switched to <code>plainto_tsquery</code>, which treats the input strictly as plain-text search terms and can no longer be interpreted as query syntax.</td>
+      </tr>
     </tbody>
   </table>
 
-  <footer>24 findings (14 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>25 findings (16 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
