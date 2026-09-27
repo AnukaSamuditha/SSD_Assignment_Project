@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"matchup_api/initializers"
+	"matchup_api/middleware"
 	"matchup_api/queue"
 	"matchup_api/routes"
 	"os"
@@ -26,6 +27,11 @@ func main() {
 	go queue.ConsumeResumeData()
 
 	router := gin.Default()
+
+	// Registered before any routes: gin only applies Use() middleware to
+	// routes added after the call, so this must precede /metrics below.
+	router.Use(middleware.SecurityHeaders)
+
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.Use(cors.New(cors.Config{
