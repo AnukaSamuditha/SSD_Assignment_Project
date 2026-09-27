@@ -85,7 +85,7 @@
 
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
-    <div class="stat high"><b>0</b>High</div>
+    <div class="stat high"><b>1</b>High</div>
     <div class="stat med"><b>5</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
   </div>
@@ -284,10 +284,26 @@
         <td class="loc"><code>middleware.ts</code></td>
         <td class="issue">ZAP (FE scan): Content Security Policy (CSP) Header Not Set — no response carried a CSP at all. Added Next.js's documented nonce + <code>'strict-dynamic'</code> pattern in <code>middleware.ts</code> (real <code>default-src 'self'</code>, scoped <code>connect-src</code>/<code>img-src</code>/<code>style-src</code>, <code>frame-ancestors 'none'</code>). Verified the header on a live response and browser-tested the homepage, login, and signup pages in Chrome: full styling, images, and JS interactivity (form validation, tab switching) all work with zero console errors.</td>
       </tr>
+      <tr class="fixed">
+        <td>23</td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
+        <td class="cat">A01 · Broken Access Control</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>middleware/csrf.go</code>, <code>main.go</code></td>
+        <td class="issue">No CSRF protection anywhere. The auth cookie is <code>SameSite=None</code> (required cross-origin for the FE/API split), and CORS only stops an attacker's page from reading the response, not from sending it — <code>multipart/form-data</code> POSTs (CreateCompany, CreateApplication) don't even trigger a preflight. A malicious page could silently create a company or submit an application as a logged-in visitor. Added <code>CSRFProtection</code> middleware rejecting any POST/PUT/PATCH/DELETE whose browser-set, script-unforgeable <code>Origin</code> header isn't the real frontend; verified with 7 unit tests (allowed origins pass, foreign/missing origins blocked on mutating methods, GET always passes through).</td>
+      </tr>
+      <tr>
+        <td>24</td>
+        <td><span class="sev High">High</span></td>
+        <td class="cat">A05 · Injection</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>controllers/companyController.go</code>, <code>controllers/applicationController.go</code>, <code>utils/uploadFile.go</code></td>
+        <td class="issue">Uploaded logo/résumé files are only checked via <code>strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/")</code> (or <code>"application/pdf"</code>) — a client-supplied, unverified header with no magic-byte/content validation anywhere in <code>utils/uploadFile.go</code>. <code>image/svg+xml</code> passes the logo check, so an SVG carrying a <code>&lt;script&gt;</code>/event-handler payload can be uploaded; if it's ever opened as a top-level document (not just an <code>&lt;img&gt;</code>) rather than only rendered inline, it executes — stored XSS via file upload (CWE-434/CWE-79).</td>
+      </tr>
     </tbody>
   </table>
 
-  <footer>22 findings (12 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>24 findings (13 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>

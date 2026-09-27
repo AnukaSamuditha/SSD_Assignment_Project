@@ -35,13 +35,17 @@ func main() {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://matchup-frontend-iota.vercel.app", "http://localhost:3000"},
+		AllowOrigins:     middleware.AllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// SECURITY FIX (CSRF, CWE-352): see middleware/csrf.go - blocks
+	// state-changing requests whose Origin isn't our own frontend.
+	router.Use(middleware.CSRFProtection)
 
 	userGroup := router.Group("/users")
 	postGroup := router.Group("/posts")
