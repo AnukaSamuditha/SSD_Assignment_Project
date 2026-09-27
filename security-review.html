@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matchup Security Review</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --border:#232733; --text:#e6e9f0; --muted:#8a92a6;
+    --crit:#ef4444; --high:#f59e0b; --med:#eab308; --low:#3b82f6;
+    --api:#22c55e; --engine:#a855f7; --fe:#38bdf8;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f4f5f8; --panel:#ffffff; --border:#e2e5ec; --text:#161a22; --muted:#5b6270; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:32px 16px;
+  }
+  .wrap{max-width:1150px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 24px}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+  .stat{
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:10px 16px;min-width:90px;text-align:center;
+  }
+  .stat b{display:block;font-size:20px}
+  .stat.crit b{color:var(--crit)} .stat.high b{color:var(--high)}
+  .stat.med b{color:var(--med)} .stat.low b{color:var(--low)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:16px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  table{
+    width:100%;border-collapse:collapse;background:var(--panel);
+    border:1px solid var(--border);border-radius:12px;overflow:hidden;
+    font-size:13px;
+  }
+  th{
+    text-align:left;background:rgba(127,127,127,.08);color:var(--muted);
+    font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+    padding:10px 12px;border-bottom:1px solid var(--border);
+  }
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(127,127,127,.05)}
+  .sev{
+    display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;
+    white-space:nowrap;
+  }
+  .sev.Critical{background:var(--crit);color:#fff}
+  .sev.High{background:var(--high);color:#1a1300}
+  .sev.Medium{background:var(--med);color:#1a1300}
+  .sev.Low{background:var(--low);color:#fff}
+  .cat{font-weight:600;white-space:nowrap}
+  .comp{
+    display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;
+    white-space:nowrap;margin-right:3px;
+  }
+  .comp.API{background:var(--api);color:#04140a}
+  .comp.Engine{background:var(--engine);color:#fff}
+  .comp.FE{background:var(--fe);color:#04140a}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;color:var(--muted);
+  }
+  .loc{max-width:230px}
+  .issue{max-width:360px}
+  footer{color:var(--muted);font-size:11px;margin-top:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Matchup — OWASP Top 10:2025 Security Review</h1>
+  <p class="sub">Matchup API (Go) · Matchup Engine (Python) · Frontend (Next.js) — reviewed 2026-09-27</p>
+
+  <div class="summary">
+    <div class="stat crit"><b>3</b>Critical</div>
+    <div class="stat high"><b>3</b>High</div>
+    <div class="stat med"><b>8</b>Medium</div>
+    <div class="stat low"><b>4</b>Low</div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--api)"></i>Matchup API</span>
+    <span><i class="dot" style="background:var(--engine)"></i>Matchup Engine</span>
+    <span><i class="dot" style="background:var(--fe)"></i>Frontend</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Severity</th>
+        <th>Category</th>
+        <th>Component</th>
+        <th>Location</th>
+        <th>Issue</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><span class="sev Critical">Critical</span></td>
+        <td class="cat">A07 · Auth Failures</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>middleware/auth.go:26-33</code></td>
+        <td class="issue">JWT parse error is never checked — a token with an invalid signature still has its claims trusted.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="sev Critical">Critical</span></td>
+        <td class="cat">A04 · Cryptographic Failures</td>
+        <td><span class="comp API">API</span><span class="comp FE">FE</span></td>
+        <td class="loc"><code>models/user.go:10</code>, <code>userController.go:93,155</code></td>
+        <td class="issue">Password hash has no <code>json:"-"</code> tag — returned in API responses and persisted to browser <code>localStorage</code>.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="sev Critical">Critical</span></td>
+        <td class="cat">A03 · Supply Chain Failures</td>
+        <td><span class="comp FE">FE</span></td>
+        <td class="loc"><code>package.json</code> (next 15.5.9)</td>
+        <td class="issue">Next.js version has known unauthenticated RCE advisories (fixed in 15.5.24+); <code>npm audit</code> shows 33 vulns, 17 high / 1 critical.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="sev High">High</span></td>
+        <td class="cat">A01 · Broken Access Control</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>companyController.go:179</code>, <code>postController.go:107,455</code></td>
+        <td class="issue">Update/Delete Company &amp; Post look up the record by ID only — no check that the caller owns it (IDOR).</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><span class="sev High">High</span></td>
+        <td class="cat">A01 · Broken Access Control</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>applicationController.go:149,186,214</code></td>
+        <td class="issue">Get/Update Application requires only login — any user can view or change any applicant's data.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><span class="sev High">High</span></td>
+        <td class="cat">A01 · Broken Access Control</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>postController.go:20-105</code></td>
+        <td class="issue">CreatePost accepts a client-supplied <code>companyID</code> with no check the user owns that company.</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A06 · Insecure Design</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>userController.go:20</code>, <code>models/user.go:11</code></td>
+        <td class="issue">Client self-assigns account role (e.g. "employer") at signup with no server-side verification.</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A10 · Exceptional Conditions</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>middleware/auth.go:34,52-54</code></td>
+        <td class="issue">Unchecked type assertion on the JWT <code>exp</code> claim panics; the failure branch logs but never aborts the request.</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>companyController.go:207</code>, <code>postController.go:203</code>, others</td>
+        <td class="issue">Raw <code>err.Error()</code> from the DB layer is concatenated straight into JSON error responses.</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A05 · Injection</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>matchup_engine/utils.py:18</code></td>
+        <td class="issue">Upstash REST URL is built by raw string interpolation of an unvalidated key into the path.</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A06 · Insecure Design</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>matchup_engine/utils.py:6-11</code></td>
+        <td class="issue"><code>download_file()</code> fetches any URL with no host allow-list — no defense if the queue's trust boundary is ever crossed.</td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A10 · Exceptional Conditions</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>matcher.py:104-149</code>, <code>utils.py:14-24</code></td>
+        <td class="issue">Queue payloads and API responses are indexed with no schema/status validation — malformed data raises unhandled exceptions.</td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A09 · Logging &amp; Alerting Failures</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>queue/producer.py:16-18</code></td>
+        <td class="issue">A missing channel is logged and silently dropped — no retry and no alert.</td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td><span class="sev Medium">Medium</span></td>
+        <td class="cat">A03 · Supply Chain Failures</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>requirements.txt</code></td>
+        <td class="issue">Every dependency is unpinned — builds can silently pull newer, unreviewed releases.</td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td><span class="sev Low">Low</span></td>
+        <td class="cat">A07 · Auth Failures</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>routes/userRoutes.go</code></td>
+        <td class="issue">No rate limiting or lockout on <code>/users/login</code> or <code>/users/signup</code>.</td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td><span class="sev Low">Low</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>Dockerfile</code></td>
+        <td class="issue">No <code>USER</code> directive — the container runs as root.</td>
+      </tr>
+      <tr>
+        <td>17</td>
+        <td><span class="sev Low">Low</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp Engine">Engine</span></td>
+        <td class="loc"><code>Matchup_Engine/.env</code></td>
+        <td class="issue">Live-looking API keys stored in plaintext in the working tree (not git-tracked).</td>
+      </tr>
+      <tr>
+        <td>18</td>
+        <td><span class="sev Low">Low</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp FE">FE</span></td>
+        <td class="loc"><code>app/error_log/page.tsx</code>, <code>app/api/sentry-example-api/route.ts</code></td>
+        <td class="issue">Default Sentry example page and API route left enabled, unauthenticated, in production.</td>
+      </tr>
+      <tr>
+        <td>19</td>
+        <td><span class="sev Low">Low</span></td>
+        <td class="cat">A01 · Broken Access Control</td>
+        <td><span class="comp FE">FE</span></td>
+        <td class="loc"><code>app/dashboard/layout.tsx:26-49</code></td>
+        <td class="issue">Dashboard renders and fires data queries with no client-side route guard, relying only on API calls failing.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>19 findings · every location read and confirmed against current source · no exploit code executed</footer>
+</div>
+</body>
+</html>
