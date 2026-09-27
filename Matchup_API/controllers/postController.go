@@ -270,13 +270,15 @@ func GetAllPosts(c *gin.Context) {
 	query := initializers.DB.Model(&models.Post{})
 
 	if q != "" {
-		// SECURITY FIX (ZAP: SQL Injection, CWE-89): `q` was fed straight into
-		// to_tsquery(), which parses its argument as a tsquery *expression*
-		// (its own mini query language with &, |, !, :, parentheses, quotes),
-		// not plain text. That let user input inject tsquery syntax, breaking
-		// the query (e.g. a bare ') or altering search logic. plainto_tsquery
-		// treats the input strictly as plain-text search terms, so it can no
-		// longer be interpreted as query syntax.
+		// SECURITY FIX (ZAP: SQL Injection CWE-89, and Format String Error
+		// CWE-134 - same root cause): `q` was fed straight into to_tsquery(),
+		// which parses its argument as a tsquery *expression* (its own mini
+		// query language with &, |, !, :, parentheses, quotes), not plain
+		// text. That let user input inject tsquery syntax, breaking the query
+		// (e.g. a bare ' or a %n/%s payload both hit the same tsquery parse
+		// error) or altering search logic. plainto_tsquery treats the input
+		// strictly as plain-text search terms, so it can no longer be
+		// interpreted as query syntax.
 		query = query.Where(
 			"search_vector @@ plainto_tsquery('english', ?)",
 			q,

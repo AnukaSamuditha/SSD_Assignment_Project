@@ -68,6 +68,13 @@
   }
   .loc{max-width:230px}
   .issue{max-width:360px}
+  tr.fixed td{opacity:.5}
+  tr.fixed .issue{text-decoration:line-through}
+  .badge-fixed{
+    display:inline-block;background:var(--api);color:#04140a;font-weight:700;
+    font-size:10px;padding:2px 7px;border-radius:5px;margin-left:6px;white-space:nowrap;
+    text-decoration:none;
+  }
   footer{color:var(--muted);font-size:11px;margin-top:20px;text-align:center}
 </style>
 </head>
@@ -80,7 +87,7 @@
     <div class="stat crit"><b>3</b>Critical</div>
     <div class="stat high"><b>3</b>High</div>
     <div class="stat med"><b>8</b>Medium</div>
-    <div class="stat low"><b>4</b>Low</div>
+    <div class="stat low"><b>5</b>Low</div>
   </div>
 
   <div class="legend">
@@ -253,10 +260,18 @@
         <td class="loc"><code>app/dashboard/layout.tsx:26-49</code></td>
         <td class="issue">Dashboard renders and fires data queries with no client-side route guard, relying only on API calls failing.</td>
       </tr>
+      <tr class="fixed">
+        <td>20</td>
+        <td><span class="sev Low">Low</span><span class="badge-fixed">Fixed</span></td>
+        <td class="cat">A02 · Security Misconfiguration</td>
+        <td><span class="comp API">API</span></td>
+        <td class="loc"><code>middleware/security_headers.go</code></td>
+        <td class="issue"><code>X-Content-Type-Options</code> was the only security header set; no <code>Content-Security-Policy</code>, <code>X-Frame-Options</code>, <code>Strict-Transport-Security</code>, <code>Referrer-Policy</code>, or <code>Permissions-Policy</code> on any route. Now all set in <code>SecurityHeaders</code> middleware.</td>
+      </tr>
     </tbody>
   </table>
 
-  <footer>19 findings · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (1 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
