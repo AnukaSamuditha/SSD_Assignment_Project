@@ -4,9 +4,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   // SECURITY FIX (ZAP: Missing Anti-clickjacking Header, CWE-1021): no page
-  // sent X-Frame-Options or a CSP frame-ancestors directive, so the site
-  // could be embedded in a hidden/disguised iframe on another site for
-  // clickjacking. Deny framing entirely on every route.
+  // sent X-Frame-Options, so the site could be embedded in a hidden/
+  // disguised iframe on another site for clickjacking. (The equivalent CSP
+  // "frame-ancestors" directive is now set in middleware.ts, alongside the
+  // rest of the Content-Security-Policy - kept out of here to avoid two
+  // separate CSP headers on the same response.)
   async headers() {
     return [
       {
@@ -15,10 +17,6 @@ const nextConfig: NextConfig = {
           {
             key: "X-Frame-Options",
             value: "DENY",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: "frame-ancestors 'none'",
           },
         ],
       },
