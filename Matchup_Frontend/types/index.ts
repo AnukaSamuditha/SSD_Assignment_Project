@@ -5,7 +5,6 @@ export type UserType = {
   FirstName: string;
   LastName: string;
   Email: string;
-  Password: string;
   Type: string;
   Gender : "male" | "female"
   Avatar : string;
