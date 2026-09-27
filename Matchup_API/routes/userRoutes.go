@@ -16,4 +16,7 @@ func UserRoutes(router *gin.RouterGroup) {
 	router.GET("/self", middleware.RequireAuth, controllers.Self)
 	router.POST("/signup", authRateLimit, controllers.SignUp)
 	router.POST("/login", authRateLimit, controllers.Login)
+
+	router.GET("/oauth/google", authRateLimit, controllers.GoogleLogin)
+	router.GET("/oauth/google/callback", authRateLimit, controllers.GoogleCallback)
 }

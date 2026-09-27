@@ -78,6 +78,10 @@ services:
       CLOUDAMQP_URL: amqp://matchup:matchup@rabbitmq:5672/
       RESUME_RESULT_QUEUE: resume_result_queue
       CLOUDINARY_URL: ${CLOUDINARY_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URL: ${GOOGLE_REDIRECT_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       postgres:
         condition: service_healthy

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useUserStore } from "@/stores/user.store";
 import { useCompanyStore } from "@/stores/company.store";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginPage() {
   const { register, reset, handleSubmit } = useForm<LoginRequestType>({
@@ -138,6 +139,17 @@ export default function LoginPage() {
               {isPending ? "Logging in..." : "Login"}
             </button>
           </form>
+
+          <div className="mt-5 flex w-full items-center gap-3">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs font-normal text-zinc-400">or</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <div className="mt-5 w-full">
+            <GoogleSignInButton />
+          </div>
+
           <div className="mt-6 w-full">
             <p
               onClick={() => router.push("/signup")}
