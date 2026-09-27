@@ -84,7 +84,7 @@
   <p class="sub">Matchup API (Go) · Matchup Engine (Python) · Frontend (Next.js) — reviewed 2026-09-27</p>
 
   <div class="summary">
-    <div class="stat crit"><b>3</b>Critical</div>
+    <div class="stat crit"><b>2</b>Critical</div>
     <div class="stat high"><b>3</b>High</div>
     <div class="stat med"><b>8</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
@@ -108,13 +108,13 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
+      <tr class="fixed">
         <td>1</td>
-        <td><span class="sev Critical">Critical</span></td>
+        <td><span class="sev Critical">Critical</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A07 · Auth Failures</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>middleware/auth.go:26-33</code></td>
-        <td class="issue">JWT parse error is never checked — a token with an invalid signature still has its claims trusted.</td>
+        <td class="loc"><code>middleware/auth.go</code></td>
+        <td class="issue">JWT parse error was never checked — a token with an invalid signature still had its claims trusted. Now aborts with 401 unless <code>err == nil</code> and <code>token.Valid</code>.</td>
       </tr>
       <tr>
         <td>2</td>
@@ -271,7 +271,7 @@
     </tbody>
   </table>
 
-  <footer>20 findings (1 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (2 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>

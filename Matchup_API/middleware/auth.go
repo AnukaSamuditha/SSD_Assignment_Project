@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"matchup_api/initializers"
 	"matchup_api/models"
 	"net/http"
@@ -29,6 +28,16 @@ func RequireAuth(c *gin.Context) {
 
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
+	// SECURITY FIX: this parse error was previously discarded, so a token with
+	// an invalid or forged signature still had its (attacker-controlled)
+	// claims trusted below - a full authentication bypass. Reject any token
+	// that failed parsing or signature verification before touching claims.
+	if err != nil || token == nil || !token.Valid {
+		c.AbortWithStatus(http.StatusUnauthorized)
+
+		return
+	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
@@ -50,7 +59,7 @@ func RequireAuth(c *gin.Context) {
 		c.Next()
 
 	} else {
-		fmt.Println(err)
+		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
 
