@@ -8,7 +8,6 @@ import (
 	"matchup_api/requests"
 	"matchup_api/utils"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -51,7 +50,7 @@ func CreateCompany(c *gin.Context) {
 		return
 	}
 
-	file, fileHeader, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("file")
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -61,15 +60,15 @@ func CreateCompany(c *gin.Context) {
 		return
 	}
 
-	if !strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/") {
+	defer file.Close()
+
+	if err := utils.ValidateUploadContentType(file, utils.AllowedImageTypes); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Only image files are allowed",
+			"error": "only PNG, JPEG, GIF, or WEBP images are allowed",
 		})
 
 		return
 	}
-
-	defer file.Close()
 
 	info := utils.DataType{
 		Type:   "image",
@@ -224,19 +223,19 @@ func UpdateCompany(c *gin.Context) {
 		return
 	}
 
-	file, fileHeader, error := c.Request.FormFile("file")
+	file, _, formErr := c.Request.FormFile("file")
 
-	if file != nil && error == nil {
+	if file != nil && formErr == nil {
 
-		if !strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "image/") {
+		defer file.Close()
+
+		if err := utils.ValidateUploadContentType(file, utils.AllowedImageTypes); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Only image files are allowed",
+				"error": "only PNG, JPEG, GIF, or WEBP images are allowed",
 			})
 
 			return
 		}
-
-		defer file.Close()
 
 		info := utils.DataType{
 			Type:   "image",

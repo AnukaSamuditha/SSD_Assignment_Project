@@ -9,7 +9,6 @@ import (
 	"matchup_api/requests"
 	"matchup_api/utils"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -37,15 +36,15 @@ func CreateApplication(c *gin.Context) {
 		return
 	}
 
-	if !strings.HasPrefix(fileHeader.Header.Get("Content-Type"), "application/pdf") {
+	defer file.Close()
+
+	if err := utils.ValidateUploadContentType(file, utils.AllowedPDFTypes); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "only pdf files are allowed",
 		})
 
 		return
 	}
-
-	defer file.Close()
 
 	data, _ := c.Get("user")
 	user := data.(models.User)
