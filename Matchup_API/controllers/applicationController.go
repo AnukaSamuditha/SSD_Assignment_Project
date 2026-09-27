@@ -157,6 +157,30 @@ func GetPostApplications(c *gin.Context) {
 		return
 	}
 
+	// SECURITY FIX (Broken Access Control): this endpoint required only
+	// login, so any user could list every applicant on any post. Only the
+	// employer who owns the post may view its applicants.
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	var post models.Post
+
+	if err := initializers.DB.Where("public_id = ?", id).First(&post).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "post not found",
+		})
+
+		return
+	}
+
+	if post.Author != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to view these applications",
+		})
+
+		return
+	}
+
 	var applications []models.Application
 
 	result := initializers.DB.Preload("User").Where("post_id = ?", id).Order("applicant_id, created_at DESC").Distinct("ON (applicant_id) applications.*").Find(&applications)
@@ -204,6 +228,25 @@ func GetApplication(c *gin.Context) {
 		})
 
 		return
+	}
+
+	// SECURITY FIX (Broken Access Control): this endpoint required only
+	// login, so any user could read any applicant's application. Restrict to
+	// the applicant themselves or the employer who owns the company it was
+	// submitted to.
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	if application.ApplicantID != user.PublicID {
+		var company models.Company
+
+		if err := initializers.DB.Where("public_id = ?", application.CompanyID).First(&company).Error; err != nil || company.AuthorID != user.PublicID {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "you do not have permission to view this application",
+			})
+
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -261,6 +304,23 @@ func UpdateApplication(c *gin.Context) {
 
 			return
 		}
+	}
+
+	// SECURITY FIX (Broken Access Control): this endpoint required only
+	// login, so any user could change any applicant's status. Only the
+	// employer who owns the company the application was submitted to may
+	// update it.
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	var company models.Company
+
+	if err := initializers.DB.Where("public_id = ?", application.CompanyID).First(&company).Error; err != nil || company.AuthorID != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to update this application",
+		})
+
+		return
 	}
 
 	result = initializers.DB.Model(&application).Updates(body)
