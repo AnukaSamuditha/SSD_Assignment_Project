@@ -85,7 +85,7 @@
 
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
-    <div class="stat high"><b>3</b>High</div>
+    <div class="stat high"><b>0</b>High</div>
     <div class="stat med"><b>8</b>Medium</div>
     <div class="stat low"><b>5</b>Low</div>
   </div>
@@ -132,29 +132,29 @@
         <td class="loc"><code>package.json</code> (next 15.5.9 → 15.5.26)</td>
         <td class="issue">Next.js version had known unauthenticated RCE advisories (fixed in 15.5.24+). Upgraded to 15.5.26; <code>next</code>'s own audit entry is now moderate-only (unrelated postcss transitive), and <code>npm run build</code> succeeds with no new errors. Remaining high/critical audit entries are in unrelated transitive deps (tar, axios, lodash, sharp, ws, etc.) — not part of this finding.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>4</td>
-        <td><span class="sev High">High</span></td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A01 · Broken Access Control</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>companyController.go:179</code>, <code>postController.go:107,455</code></td>
-        <td class="issue">Update/Delete Company &amp; Post look up the record by ID only — no check that the caller owns it (IDOR).</td>
+        <td class="loc"><code>companyController.go:179</code>, <code>postController.go:118,464</code></td>
+        <td class="issue">Update/Delete Company &amp; Post looked up the record by ID only — no check that the caller owns it (IDOR). Added ownership checks (<code>company.AuthorID</code> / <code>post.Author</code> vs. caller) that 403 before any write; DeletePost now fetches the row first so it can be checked instead of deleting by ID alone.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>5</td>
-        <td><span class="sev High">High</span></td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A01 · Broken Access Control</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>applicationController.go:149,186,214</code></td>
-        <td class="issue">Get/Update Application requires only login — any user can view or change any applicant's data.</td>
+        <td class="loc"><code>applicationController.go:149,210,257</code></td>
+        <td class="issue">Get/Update Application required only login — any user could view or change any applicant's data. GetPostApplications now requires the caller own the post; GetApplication allows the applicant or the owning employer; UpdateApplication is restricted to the owning employer.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>6</td>
-        <td><span class="sev High">High</span></td>
+        <td><span class="sev High">High</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A01 · Broken Access Control</td>
         <td><span class="comp API">API</span></td>
-        <td class="loc"><code>postController.go:20-105</code></td>
-        <td class="issue">CreatePost accepts a client-supplied <code>companyID</code> with no check the user owns that company.</td>
+        <td class="loc"><code>postController.go:20-116</code></td>
+        <td class="issue">CreatePost accepted a client-supplied <code>companyID</code> with no check the user owns that company. Now 403s unless <code>company.AuthorID == user.PublicID</code>.</td>
       </tr>
       <tr>
         <td>7</td>
@@ -271,7 +271,7 @@
     </tbody>
   </table>
 
-  <footer>20 findings (4 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>20 findings (7 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>

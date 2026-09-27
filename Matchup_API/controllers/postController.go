@@ -61,6 +61,17 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
+	// SECURITY FIX (IDOR): companyID came straight from the client with no
+	// check that the caller owns it, letting any employer attach a post to
+	// someone else's company.
+	if company.AuthorID != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to post for this company",
+		})
+
+		return
+	}
+
 	salaryJSON, err := json.Marshal(body.Salary)
 
 	if err != nil {
@@ -156,6 +167,19 @@ func UpdatePost(c *gin.Context) {
 
 			return
 		}
+	}
+
+	// SECURITY FIX (IDOR): the post was looked up by ID alone, so any
+	// authenticated employer could update any other employer's post.
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	if post.Author != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to update this post",
+		})
+
+		return
 	}
 
 	salaryJSON, err := json.Marshal(body.Salary)
@@ -482,7 +506,41 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	result := initializers.DB.Where("public_id = ?", postUUID).Delete(&models.Post{})
+	// SECURITY FIX (IDOR): this previously deleted by ID alone with no
+	// ownership check, letting any authenticated employer delete any other
+	// employer's post. Fetch the post first so ownership can be verified.
+	var post models.Post
+
+	result := initializers.DB.Where("public_id = ?", postUUID).First(&post)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Post not found",
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error finding the post",
+		})
+
+		return
+	}
+
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	if post.Author != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to delete this post",
+		})
+
+		return
+	}
+
+	result = initializers.DB.Delete(&post)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

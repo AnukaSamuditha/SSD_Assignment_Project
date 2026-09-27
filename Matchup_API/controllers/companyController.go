@@ -210,6 +210,20 @@ func UpdateCompany(c *gin.Context) {
 		return
 	}
 
+	data, _ := c.Get("user")
+	user := data.(models.User)
+
+	// SECURITY FIX (IDOR): the company was looked up by ID alone, so any
+	// authenticated employer could update any other employer's company.
+	// Require the caller to be the company's own author.
+	if company.AuthorID != user.PublicID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "you do not have permission to update this company",
+		})
+
+		return
+	}
+
 	file, fileHeader, error := c.Request.FormFile("file")
 
 	if file != nil && error == nil {
@@ -223,9 +237,6 @@ func UpdateCompany(c *gin.Context) {
 		}
 
 		defer file.Close()
-
-		data, _ := c.Get("user")
-		user := data.(models.User)
 
 		info := utils.DataType{
 			Type:   "image",
