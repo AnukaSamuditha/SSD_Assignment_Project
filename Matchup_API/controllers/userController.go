@@ -31,11 +31,6 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	// SECURITY FIX (Insecure Design): `body.Type` is the account's
-	// authorization role - checked by Authorize("employer") on every
-	// privileged route - and was accepted from the client with no
-	// validation, letting a signup request set it to any string. Restrict it
-	// to the known, self-service roles the product actually offers.
 	if body.Type != "employer" && body.Type != "regular" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid account type",

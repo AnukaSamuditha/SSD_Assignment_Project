@@ -86,7 +86,7 @@
   <div class="summary">
     <div class="stat crit"><b>0</b>Critical</div>
     <div class="stat high"><b>0</b>High</div>
-    <div class="stat med"><b>5</b>Medium</div>
+    <div class="stat med"><b>4</b>Medium</div>
     <div class="stat low"><b>4</b>Low</div>
   </div>
 
@@ -188,13 +188,13 @@
         <td class="loc"><code>matchup_engine/utils.py:18</code></td>
         <td class="issue">Upstash REST URL is built by raw string interpolation of an unvalidated key into the path.</td>
       </tr>
-      <tr>
+      <tr class="fixed">
         <td>11</td>
-        <td><span class="sev Medium">Medium</span></td>
+        <td><span class="sev Medium">Medium</span><span class="badge-fixed">Fixed</span></td>
         <td class="cat">A06 · Insecure Design</td>
         <td><span class="comp Engine">Engine</span></td>
-        <td class="loc"><code>matchup_engine/utils.py:6-11</code></td>
-        <td class="issue"><code>download_file()</code> fetches any URL with no host allow-list — no defense if the queue's trust boundary is ever crossed.</td>
+        <td class="loc"><code>matchup_engine/utils.py:6-19</code></td>
+        <td class="issue"><code>download_file()</code> fetched any URL with no host allow-list (SSRF, CWE-918) — no defense if the RabbitMQ trust boundary is ever crossed. Added an explicit allow-list (<code>res.cloudinary.com</code> only, HTTPS only) checked via <code>urlparse().hostname</code> before any request is made. Verified against 7 cases: legitimate Cloudinary URLs pass; lookalike subdomains, userinfo tricks, cloud-metadata IPs, and <code>file://</code> URLs are all rejected.</td>
       </tr>
       <tr>
         <td>12</td>
@@ -311,7 +311,7 @@
     </tbody>
   </table>
 
-  <footer>25 findings (16 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
+  <footer>25 findings (17 fixed) · every location read and confirmed against current source · no exploit code executed</footer>
 </div>
 </body>
 </html>
