@@ -157,9 +157,7 @@ func GetPostApplications(c *gin.Context) {
 		return
 	}
 
-	// SECURITY FIX (Broken Access Control): this endpoint required only
-	// login, so any user could list every applicant on any post. Only the
-	// employer who owns the post may view its applicants.
+	
 	data, _ := c.Get("user")
 	user := data.(models.User)
 
@@ -230,10 +228,7 @@ func GetApplication(c *gin.Context) {
 		return
 	}
 
-	// SECURITY FIX (Broken Access Control): this endpoint required only
-	// login, so any user could read any applicant's application. Restrict to
-	// the applicant themselves or the employer who owns the company it was
-	// submitted to.
+	
 	data, _ := c.Get("user")
 	user := data.(models.User)
 
@@ -306,10 +301,7 @@ func UpdateApplication(c *gin.Context) {
 		}
 	}
 
-	// SECURITY FIX (Broken Access Control): this endpoint required only
-	// login, so any user could change any applicant's status. Only the
-	// employer who owns the company the application was submitted to may
-	// update it.
+	
 	data, _ := c.Get("user")
 	user := data.(models.User)
 

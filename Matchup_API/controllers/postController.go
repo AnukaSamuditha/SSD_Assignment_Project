@@ -61,9 +61,7 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// SECURITY FIX (IDOR): companyID came straight from the client with no
-	// check that the caller owns it, letting any employer attach a post to
-	// someone else's company.
+
 	if company.AuthorID != user.PublicID {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "you do not have permission to post for this company",
@@ -169,8 +167,7 @@ func UpdatePost(c *gin.Context) {
 		}
 	}
 
-	// SECURITY FIX (IDOR): the post was looked up by ID alone, so any
-	// authenticated employer could update any other employer's post.
+
 	data, _ := c.Get("user")
 	user := data.(models.User)
 
@@ -506,9 +503,7 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	// SECURITY FIX (IDOR): this previously deleted by ID alone with no
-	// ownership check, letting any authenticated employer delete any other
-	// employer's post. Fetch the post first so ownership can be verified.
+	
 	var post models.Post
 
 	result := initializers.DB.Where("public_id = ?", postUUID).First(&post)

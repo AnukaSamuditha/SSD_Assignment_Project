@@ -213,9 +213,7 @@ func UpdateCompany(c *gin.Context) {
 	data, _ := c.Get("user")
 	user := data.(models.User)
 
-	// SECURITY FIX (IDOR): the company was looked up by ID alone, so any
-	// authenticated employer could update any other employer's company.
-	// Require the caller to be the company's own author.
+	
 	if company.AuthorID != user.PublicID {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "you do not have permission to update this company",
