@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// SECURITY FIX (ZAP: Content Security Policy (CSP) Header Not Set,
-// CWE-693): no response carried a CSP at all. Uses Next.js's documented
-// nonce + 'strict-dynamic' pattern: a fresh nonce is generated per request,
-// Next automatically applies it to the inline scripts it injects for
-// hydration, and 'strict-dynamic' lets those scripts load the rest of the
-// app's own JS chunks without needing to allowlist script hosts by name.
+
 const API_ORIGIN = process.env.NEXT_PUBLIC_SERVER ?? "";
 const SENTRY_ORIGIN = "https://o4510622048976896.ingest.us.sentry.io";
 
