@@ -34,6 +34,7 @@ func CSRFProtection(c *gin.Context) {
 
 	origin := c.GetHeader("Origin")
 
+	// Compare complete origins so lookalike hostnames cannot pass this check.
 	if origin == "" || !slices.Contains(AllowedOrigins, origin) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error": "cross-site request blocked",
