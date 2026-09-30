@@ -23,6 +23,9 @@ func RateLimit(prefix string, limit redis_rate.Limit) gin.HandlerFunc {
 	limiter := redis_rate.NewLimiter(initializers.Redis)
 
 	return func(c *gin.Context) {
+		// Limit is tracked per client IP. ClientIP() is only trustworthy because
+       // main.go calls SetTrustedProxies(nil), so X-Forwarded-For can't be spoofed.
+
 		key := "ratelimit:" + prefix + ":" + c.ClientIP()
 
 		res, err := limiter.Allow(c.Request.Context(), key, limit)
