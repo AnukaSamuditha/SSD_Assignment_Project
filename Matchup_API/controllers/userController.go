@@ -36,6 +36,9 @@ func SignUp(c *gin.Context) {
 	// privileged route - and was accepted from the client with no
 	// validation, letting a signup request set it to any string. Restrict it
 	// to the known, self-service roles the product actually offers.
+	
+	// -Allow-list (not deny-list): any new role must be added here explicitly.
+
 	if body.Type != "employer" && body.Type != "regular" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid account type",
