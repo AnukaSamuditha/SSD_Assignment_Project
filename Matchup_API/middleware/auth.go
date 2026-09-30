@@ -21,7 +21,7 @@ func RequireAuth(c *gin.Context) {
 
 		return
 	}
-
+	// Accept only HS256 tokens verified with the server's secret.
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 
 		return []byte(os.Getenv("SECRET")), nil
