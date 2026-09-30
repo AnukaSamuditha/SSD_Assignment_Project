@@ -46,6 +46,8 @@ func RequireAuth(c *gin.Context) {
 		// token as invalid rather than crashing the handler.
 		exp, expOk := claims["exp"].(float64)
 
+		// Missing/non-numeric exp (expOk == false) and expired tokens both fail closed with 401.
+
 		if !expOk || float64(time.Now().Unix()) > exp {
 			c.AbortWithStatus(http.StatusUnauthorized)
 
